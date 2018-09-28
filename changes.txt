@@ -1,0 +1,142 @@
+UPDATES
+--------
+
+Sep 28, 2018
+  moved from subversion to github
+
+Feb 14, 2018
+  fixed bug in partial pos matching query
+
+Feb 9, 2018
+  extended the partial matching
+
+Oct 25, 2017
+  BioMart discontinued attribute 'status'
+
+Jun 28, 2017
+  fixed BioMart attributes for rat: 'rgd' --> 'rgd_id'
+
+Nov 23, 2016
+  migrated build system from ANT to GRADLE
+  replaced ENTREZ with NCBI GENE
+
+Aug 18, 2016
+  updated links to NCBI to use HTTPS instead of HTTP -- per RGDD1254
+
+Nov 12, 2015
+  updated url for Ensembl BioMart; updated jars
+
+Nov 26, 2014
+  Ensembl BioMart retired some of the attributes; updated the code
+
+July 9, 2013
+  fixed data parser so it can handle malformed incoming rgd_ids
+
+
+
+BIOMART USAGE:
+--------------
+
+
+This is the url to download the data
+http://www.ensembl.org/biomart/martview/6cdb31f02e12cc2315e991c94e867aa1/6cdb31f02e12cc2315e991c94e867aa1/6cdb31f02e12cc2315e991c94e867aa1?VIRTUALSCHEMANAME=default&ATTRIBUTES=rnorvegicus_gene_ensembl.default.structure.ensembl_gene_id|rnorvegicus_gene_ensembl.default.structure.ensembl_transcript_id|rnorvegicus_gene_ensembl.default.structure.gene_biotype|rnorvegicus_gene_ensembl.default.structure.description|rnorvegicus_gene_ensembl.default.structure.transcript_count|rnorvegicus_gene_ensembl.default.structure.cds_length|rnorvegicus_gene_ensembl.default.structure.3_utr_end|rnorvegicus_gene_ensembl.default.structure.3_utr_start|rnorvegicus_gene_ensembl.default.structure.5_utr_end|rnorvegicus_gene_ensembl.default.structure.5_utr_start|rnorvegicus_gene_ensembl.default.structure.external_gene_db|rnorvegicus_gene_ensembl.default.structure.external_gene_id|rnorvegicus_gene_ensembl.default.structure.strand|rnorvegicus_gene_ensembl.default.structure.transcript_end|rnorvegicus_gene_ensembl.default.structure.transcript_start|rnorvegicus_gene_ensembl.default.structure.end_position|rnorvegicus_gene_ensembl.default.structure.start_position|rnorvegicus_gene_ensembl.default.structure.chromosome_name|rnorvegicus_gene_ensembl.default.structure.ensembl_peptide_id|rnorvegicus_gene_ensembl.default.structure.cds_end|rnorvegicus_gene_ensembl.default.structure.cds_start|rnorvegicus_gene_ensembl.default.structure.genomic_coding_end|rnorvegicus_gene_ensembl.default.structure.genomic_coding_start|rnorvegicus_gene_ensembl.default.structure.cdna_coding_end|rnorvegicus_gene_ensembl.default.structure.cdna_coding_start|rnorvegicus_gene_ensembl.default.structure.phase|rnorvegicus_gene_ensembl.default.structure.rank|rnorvegicus_gene_ensembl.default.structure.is_constitutive|rnorvegicus_gene_ensembl.default.structure.exon_chrom_end|rnorvegicus_gene_ensembl.default.structure.exon_chrom_start|rnorvegicus_gene_ensembl.default.structure.ensembl_exon_id&FILTERS=&VISIBLEPANEL=attributepanel
+
+(a) Querying BioMart
+
+To submit a query using our webservices generate an XML document conforming to our Query XML syntax. This can be achieved simply by building up your query using MartView and hitting the XML button. This XML should be posted to http://www.biomart.org/martservice attached to a single parameter of query. For example you could either:
+save your query as Query.xml and then POST this using the webExample.pl script in our biomart-perl/scripts installation.
+submit using wget: wget -O results.txt 'http://www.biomart.org/biomart/martservice?query=MY_XML' replacing MY_XML with the XML obtained above, first removing any new lines.
+
+(b) Retrieving Meta Data
+
+to retrieve registry information: http://www.biomart.org/biomart/martservice?type=registry
+to retrieve datasets available for a mart: http://www.biomart.org/biomart/martservice?type=datasets&mart=ensembl
+to retrieve attributes available for a dataset: http://www.biomart.org/biomart/martservice?type=attributes&dataset=oanatinus_gene_ensembl
+to retrieve filters available for a dataset: http://www.biomart.org/biomart/martservice?type=filters&dataset=oanatinus_gene_ensembl
+to retrieve configuration for a dataset: http://www.biomart.org/biomart/martservice?type=configuration&dataset=oanatinus_gene_ensembl
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+
+	<Dataset name = "rnorvegicus_gene_ensembl" interface = "default" >
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "ensembl_transcript_id" />
+		<Attribute name = "ensembl_peptide_id" />
+		<Attribute name = "description" />
+		<Attribute name = "chromosome_name" />
+		<Attribute name = "start_position" />
+		<Attribute name = "end_position" />
+		<Attribute name = "strand" />
+		<Attribute name = "band" />
+		<Attribute name = "transcript_start" />
+		<Attribute name = "transcript_end" />
+		<Attribute name = "external_gene_id" />
+		<Attribute name = "external_transcript_id" />
+		<Attribute name = "external_gene_db" />
+		<Attribute name = "transcript_db_name" />
+		<Attribute name = "transcript_count" />
+		<Attribute name = "percentage_gc_content" />
+		<Attribute name = "gene_biotype" />
+		<Attribute name = "transcript_biotype" />
+		<Attribute name = "source" />
+		<Attribute name = "status" />
+		<Attribute name = "transcript_status" />
+		<Attribute name = "entrezgene" />
+		<Attribute name = "rgd" />
+	</Dataset>
+</Query>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+		
+	<Dataset name = "rnorvegicus_gene_ensembl" interface = "default" >
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "ensembl_transcript_id" />
+		<Attribute name = "gene_biotype" />
+		<Attribute name = "description" />
+		<Attribute name = "transcript_count" />
+		<Attribute name = "cds_length" />
+		<Attribute name = "3_utr_end" />
+		<Attribute name = "3_utr_start" />
+		<Attribute name = "5_utr_end" />
+		<Attribute name = "5_utr_start" />
+		<Attribute name = "external_gene_db" />
+		<Attribute name = "external_gene_id" />
+		<Attribute name = "strand" />
+		<Attribute name = "transcript_end" />
+		<Attribute name = "transcript_start" />
+		<Attribute name = "end_position" />
+		<Attribute name = "start_position" />
+		<Attribute name = "chromosome_name" />
+		<Attribute name = "ensembl_peptide_id" />
+		<Attribute name = "cds_end" />
+		<Attribute name = "cds_start" />
+		<Attribute name = "genomic_coding_end" />
+		<Attribute name = "genomic_coding_start" />
+		<Attribute name = "cdna_coding_end" />
+		<Attribute name = "cdna_coding_start" />
+		<Attribute name = "phase" />
+		<Attribute name = "rank" />
+		<Attribute name = "is_constitutive" />
+		<Attribute name = "exon_chrom_end" />
+		<Attribute name = "exon_chrom_start" />
+		<Attribute name = "ensembl_exon_id" />
+	</Dataset>
+</Query>
+
+
+
+        <Attribute name = "ensembl_peptide_id" />
+		<Attribute name = "entrezgene" />
+		<Attribute name = "rgd" />
+        <Attribute name = "canonical_transcript_stable_id" />
+        <Attribute name = "chromosome_name" />
+        <Attribute name = "start_position" />
+        <Attribute name = "end_position" />
+        <Attribute name = "strand" />
+        <Attribute name = "band" />
+

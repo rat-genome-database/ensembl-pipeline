@@ -1,0 +1,82 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean id="loader" class="edu.mcw.rgd.dataload.EnsemblLoader">
+        <property name="version" value="Ensembl Pipeline ver. 1.2.5 (Sep 28, 2018)"/>
+        <property name="pipelinePreprocessor" ref="pipelinePreprocessor"/>
+        <property name="dataQC" ref="ensemblDataQC"/>
+        <property name="dataLoader" ref="ensemblGeneLoader"/>
+    </bean>
+
+    <bean id="ensemblDataPuller" class="edu.mcw.rgd.dataload.EnsemblDataPuller">
+        <property name="version" value="EnsemblDataPuller v. 1.2.2 (Oct 25, 2017)" />
+        <property name="websiteUrl" value="http://www.ensembl.org/biomart/martservice"/>
+        <property name="biomartQueryTemplate" value="properties/biomart.xml"/>
+        <property name="biomartQueryAttrsGenes"><!-- ensembl gene attributes common to all species -->
+            <list>
+                <value>entrezgene</value>
+                <!--<value>status</value>-->
+
+                <value>chromosome_name</value>
+                <value>start_position</value>
+                <value>end_position</value>
+                <value>strand</value>
+
+                <value>gene_biotype</value>
+                                                           <!--
+                <value>ensembl_transcript_id</value>
+                <value>canonical_transcript_stable_id</value>
+                <value>transcript_biotype</value>
+                <value>transcript_status</value>
+                <value>transcript_start</value>
+                <value>transcript_end</value>                  -->
+            </list>
+        </property>
+        <property name="biomartQueryAttrsRatGenes"><!-- ensembl gene attributes specific to rat -->
+            <list>
+                <value>rgd_id</value>
+                <value>rgd_symbol</value>
+            </list>
+        </property>
+        <property name="biomartQueryAttrsMouseGenes"><!-- ensembl gene attributes specific to mouse -->
+            <list>
+            </list>
+        </property>
+        <property name="biomartQueryAttrsHumanGenes"><!-- ensembl gene attributes specific to human -->
+            <list>
+            </list>
+        </property>
+        <property name="biomartQueryAttrsNcbiGene"><!-- biomart query attributes for NCBI gene ids-->
+            <list>
+                <value>entrezgene</value>
+            </list>
+        </property>
+        <property name="biomartQueryAttrsTranscripts"><!-- biomart query attributes for ensembl transcripts ids-->
+            <list>
+                <value>chromosome_name</value>
+                <value>ensembl_transcript_id</value>
+                <value>canonical_transcript_stable_id</value>
+                <value>transcript_biotype</value>
+                <value>transcript_status</value>
+                <value>transcript_start</value>
+                <value>transcript_end</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="ensemblDataParser" class="edu.mcw.rgd.dataload.EnsemblDataParser">
+        <property name="version" value="EnsemblDataParser v. 1.1.3 (Oct 25, 2017)" />
+    </bean>
+
+    <bean id="ensemblDataQC" class="edu.mcw.rgd.dataload.EnsemblQualityChecker2">
+        <property name="version" value="EnsemblQualityChecker v. 2.0.3 (Feb 9, 2018)" />
+    </bean>
+
+    <bean id="pipelinePreprocessor" class="edu.mcw.rgd.dataload.EnsemblPipelinePreprocessor">
+        <property name="dataPuller" ref="ensemblDataPuller"/>
+        <property name="dataParser" ref="ensemblDataParser"/>
+    </bean>
+
+    <bean id="ensemblGeneLoader" class="edu.mcw.rgd.dataload.EnsemblGeneLoader">
+    </bean>
+
+</beans>
