@@ -10,10 +10,8 @@ import java.net.*;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: Aug 13, 2010
- * Time: 10:15:33 AM
+ * @author mtutaj
+ * @since Aug 13, 2010
  * pulls the data from Ensembl website and stores them locally in data subfolder
  */
 public class EnsemblDataPuller {

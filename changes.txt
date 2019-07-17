@@ -1,5 +1,7 @@
 UPDATES
 --------
+Jul 17, 2019
+  simplified logic by getting rid of PipelineManager framework
 
 Sep 28, 2018
   moved from subversion to github

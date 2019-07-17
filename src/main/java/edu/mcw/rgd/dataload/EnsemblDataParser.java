@@ -7,10 +7,8 @@ import java.io.FileReader;
 import java.util.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: Aug 13, 2010
- * Time: 5:07:56 PM
+ * @author mtutaj
+ * @since Aug 13, 2010
  * parse the input file; assume the 1st 3 lines contain ensembl gene id, transcript id and protein id,
  * followed by ncbi gene id and rgd id
  */
@@ -18,7 +16,6 @@ public class EnsemblDataParser {
 
     EnsemblGeneSummary summary;
     PipelineLogger dbLogger = PipelineLogger.getInstance();
-    private String version;
 
     /**
      * read input file in TSV format, break it into genes and return a list of ensembl genes
@@ -30,8 +27,7 @@ public class EnsemblDataParser {
         // the lines are sorted on gene-by-gene basis, so this makes the processing simple
         //
         // open the input file
-        System.out.println(getVersion());
-        dbLogger.log(getVersion()+": parsing gene file ", inputFile, PipelineLogger.INFO);
+        dbLogger.log("  parsing gene file ", inputFile, PipelineLogger.INFO);
 
         BufferedReader reader = new BufferedReader(new FileReader(inputFile));
 
@@ -175,13 +171,5 @@ public class EnsemblDataParser {
 
     public void setSummary(EnsemblGeneSummary summary) {
         this.summary = summary;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
     }
 }

@@ -1,11 +1,9 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.pipelines.PipelineRecord;
-import edu.mcw.rgd.pipelines.RecordProcessor;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.PipelineLogger;
-import edu.mcw.rgd.process.Utils;
 import edu.mcw.rgd.reporting.Link;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,7 +15,7 @@ import java.util.*;
  * @since Sep 3, 2010
  * checks ensembl genes only against RGD; only Ensembl Gene ID is matched
  */
-public class EnsemblQualityChecker2 extends RecordProcessor {
+public class EnsemblQualityChecker2 {
 
     Log log;
     PipelineLogger dbLogger = PipelineLogger.getInstance();
@@ -25,9 +23,9 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
     int speciesTypeKey;
 
     EnsemblDAO dao;
+    CounterPool counters;
 
     static EnsemblGeneSummary summary = new EnsemblGeneSummary();
-    private String version;
 
     public EnsemblQualityChecker2() throws Exception {
         dao = new EnsemblDAO();
@@ -38,10 +36,20 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         registerDbFlags();
     }
 
-    @Override
-    public void process(PipelineRecord pipelineRecord) throws Exception {
+    public void run(Collection<EnsemblGene> genes, CounterPool counters) {
 
-        EnsemblGene gene = (EnsemblGene) pipelineRecord;
+        this.counters = counters;
+
+        genes.parallelStream().forEach( gene -> {
+            try {
+                run(gene);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    void run(EnsemblGene gene) throws Exception {
 
         // run checks through the gene
         checkByEnsemblGeneId(gene);
@@ -147,7 +155,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         if( mappedToRefAssembly==1 ) {
             dbLogger.addLogProp("CONFLICT_BIN1", buf.toString(), gene.getRecNo(), PipelineLog.LOGPROP_WARNMESSAGE);
             dbFlagManager.setFlag("CONFLICT_BIN1", gene.getRecNo());
-            getSession().incrementCounter("CONFLICT_BIN1", 1);
+            counters.increment("CONFLICT_BIN1");
         }
     }
 
@@ -168,7 +176,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // check gene position against RGD
         if( gene.isFlagSet("GENEPOS_NO_POS") ) {
             // ensembl gene does not have genomic position available, no position is to be updated
-            getSession().incrementCounter("ENSEMBL_GENE_WITHOUT_POSITION", 1);
+            counters.increment("ENSEMBL_GENE_WITHOUT_POSITION");
             return;
         }
 
@@ -188,7 +196,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // if there is nothing in RGD, add the new ensemble map positions
         if( mapDataInRgd.isEmpty() ) {
             gene.mdForInsert = mdEnsembl;
-            getSession().incrementCounter("INSERT_MAPDATA_FOR_GENE", 1);
+            counters.increment("INSERT_MAPDATA_FOR_GENE");
             return;
         }
 
@@ -200,7 +208,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // there are some map positions in rgd; remove map positions with exact match
         MapData mdInRgd = mapDataInRgd.get(0);
         if( mdInRgd.equalsByGenomicCoords(mdEnsembl) ) {
-            getSession().incrementCounter("MATCHING_MAPDATA_FOR_GENE", 1);
+            counters.increment("MATCHING_MAPDATA_FOR_GENE");
             return;
         }
 
@@ -210,9 +218,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         mdInRgd.setStrand(mdEnsembl.getStrand());
         gene.mdForUpdate = mdInRgd;
 
-        getSession().incrementCounter("UPDATE_MAPDATA_FOR_GENE", 1);
-
-        // getSession().incrementCounter("DELETE_MAPDATA_FOR_GENE", mapDataInRgd.size());
+        counters.increment("UPDATE_MAPDATA_FOR_GENE");
     }
 
     void prepareAliases(EnsemblGene gene) throws Exception {
@@ -221,7 +227,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         String ensemblSymbol = gene.getExternalSymbol();
         if( ensemblSymbol==null || ensemblSymbol.trim().isEmpty() ) {
 
-            getSession().incrementCounter("ENSEMBL_GENE_WITHOUT_SYMBOL", 1);
+            counters.increment("ENSEMBL_GENE_WITHOUT_SYMBOL");
             return;
         }
 
@@ -229,7 +235,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         Gene rgdGene = dao.getGene(gene.getMatchingRgdId());
         if( rgdGene.getSymbol()!=null && rgdGene.getSymbol().equalsIgnoreCase(ensemblSymbol) ) {
 
-            getSession().incrementCounter("ENSEMBL_SYMBOL_MATCHES_RGD_GENE_SYMBOL", 1);
+            counters.increment("ENSEMBL_SYMBOL_MATCHES_RGD_GENE_SYMBOL");
             return;
         }
 
@@ -238,7 +244,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         for( Alias alias: aliases ) {
             if( alias.getValue().equalsIgnoreCase(ensemblSymbol) ) {
 
-                getSession().incrementCounter("ENSEMBL_SYMBOL_MATCHES_RGD_GENE_ALIAS", 1);
+                counters.increment("ENSEMBL_SYMBOL_MATCHES_RGD_GENE_ALIAS");
                 return;
             }
         }
@@ -251,7 +257,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         alias.setValue(ensemblSymbol);
         gene.aliasForInsert = alias;
 
-        getSession().incrementCounter("ENSEMBL_SYMBOL_INSERTED", 1);
+        counters.increment("ENSEMBL_SYMBOL_INSERTED");
     }
 
     void prepareXdbIds(EnsemblGene gene) throws Exception {
@@ -282,15 +288,15 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // remove from xdb ids in rgd those that are already in incoming data from ensembl
         List<XdbId> sharedXdbIds = new ArrayList<XdbId>(rgdXdbIds);
         sharedXdbIds.retainAll(ensemblXdbIds);
-        getSession().incrementCounter("MATCHING_XDB_IDS", sharedXdbIds.size());
+        counters.add("MATCHING_XDB_IDS", sharedXdbIds.size());
 
         rgdXdbIds.removeAll(sharedXdbIds);
         gene.xdbIdsForDelete = rgdXdbIds;
-        getSession().incrementCounter("DELETED_XDB_IDS", rgdXdbIds.size());
+        counters.add("DELETED_XDB_IDS", rgdXdbIds.size());
 
         ensemblXdbIds.removeAll(sharedXdbIds);
         gene.xdbIdsForInsert = ensemblXdbIds;
-        getSession().incrementCounter("INSERTED_XDB_IDS", ensemblXdbIds.size());
+        counters.add("INSERTED_XDB_IDS", ensemblXdbIds.size());
     }
 
 
@@ -317,7 +323,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // no match with rgd
         if( rgdIds.isEmpty() ) {
             dbFlagManager.setFlag("ENSEMBL_GENEID_NO_MATCH", gene.getRecNo());
-            getSession().incrementCounter("ENSEMBL_GENEID_NO_MATCH", 1);
+            counters.increment("ENSEMBL_GENEID_NO_MATCH");
             return;
         }
 
@@ -329,7 +335,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // check if there is at least one incoming NCBI gene id
         if( gene.getNcbiGeneIds().isEmpty() ) {
             dbFlagManager.setFlag("NCBIGENE_MISSING", gene.getRecNo());
-            getSession().incrementCounter("NCBIGENE_MISSING", 1);
+            counters.increment("NCBIGENE_MISSING");
             return; // there are no incoming EG IDs present
         }
 
@@ -345,7 +351,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // determine flag
         if( rgdIds.isEmpty() ) { // none of EG ids have a matching RGD_ID!
             dbFlagManager.setFlag("NCBIGENE_NO_MATCH", gene.getRecNo());
-            getSession().incrementCounter("NCBIGENE_NO_MATCH", 1);
+            counters.increment("NCBIGENE_NO_MATCH");
             return;
         }
 
@@ -359,7 +365,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         List<Integer> rgdIds = gene.getRgdIds();
         if( rgdIds.isEmpty() ) {
             dbFlagManager.setFlag("RGDIDS_MISSING", gene.getRecNo());
-            getSession().incrementCounter("RGDIDS_MISSING", 1);
+            counters.increment("RGDIDS_MISSING");
             return; // there are no incoming EG IDs present
         }
 
@@ -373,7 +379,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         String symbol = gene.getExternalSymbol();
         if( symbol==null || symbol.trim().length()==0 ) {
             dbFlagManager.setFlag("SYMBOL_MISSING", gene.getRecNo());
-            getSession().incrementCounter("SYMBOL_MISSING", 1);
+            counters.increment("SYMBOL_MISSING");
             return;
         }
 
@@ -389,7 +395,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
         // the gene positions must be non-zero
         if( !(gene.getStartPos()>0 && gene.getStartPos() < gene.getStopPos()) ) {
             dbFlagManager.setFlag("GENEPOS_NO_POS", gene.getRecNo());
-            getSession().incrementCounter("GENEPOS_NO_POS", 1);
+            counters.increment("GENEPOS_NO_POS");
             return;
         }
 
@@ -401,12 +407,12 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
             geneRgdIds = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), getSpeciesTypeKey());
             if( geneRgdIds.isEmpty() ) {
                 dbFlagManager.setFlag("GENEPOS_NO_MATCH", gene.getRecNo());
-                getSession().incrementCounter("GENEPOS_NO_MATCH", 1);
+                counters.increment("GENEPOS_NO_MATCH");
                 return;
             }
 
             dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN1BP", gene.getRecNo());
-            getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN1BP", 1);
+            counters.increment("GENEPOS_PARTIAL_MATCH_MIN1BP");
             gene.setPartialPosMatch(true);
 
             List<Integer> geneRgdIds1 = geneRgdIds;
@@ -414,7 +420,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 20, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN20BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN20BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN20BP");
                 }
             }
 
@@ -422,7 +428,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 50, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN50BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN50BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN50BP");
                 }
             }
 
@@ -430,7 +436,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 100, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN100BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN100BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN100BP");
                 }
             }
 
@@ -438,7 +444,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 200, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN200BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN200BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN200BP");
                 }
             }
 
@@ -446,7 +452,7 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 500, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN500BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN500BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN500BP");
                 }
             }
 
@@ -454,18 +460,18 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
                 geneRgdIds1 = dao.getGenesByCoordsPartial(gene.getChromosome(), gene.getStartPos(), gene.getStopPos(), 1000, getSpeciesTypeKey());
                 if (!geneRgdIds1.isEmpty()) {
                     dbFlagManager.setFlag("GENEPOS_PARTIAL_MATCH_MIN1000BP", gene.getRecNo());
-                    getSession().incrementCounter("GENEPOS_PARTIAL_MATCH_MIN1000BP", 1);
+                    counters.increment("GENEPOS_PARTIAL_MATCH_MIN1000BP");
                 }
             }
         }
         else
         if( geneRgdIds.size()>1 ) {
             dbFlagManager.setFlag("GENEPOS_MULTI_MATCH", gene.getRecNo());
-            getSession().incrementCounter("GENEPOS_MULTI_MATCH", 1);
+            counters.increment("GENEPOS_MULTI_MATCH");
         } else {
             // there is single match by genomic position!
             dbFlagManager.setFlag("GENEPOS_EXACT_MATCH", gene.getRecNo());
-            getSession().incrementCounter("GENEPOS_EXACT_MATCH", 1);
+            counters.increment("GENEPOS_EXACT_MATCH");
             gene.setExactPosMatch(true);
         }
 
@@ -519,17 +525,17 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
 
         if( activeRgdIds.size()>1) {
             dbFlagManager.setFlag(flagPrefix+"_MULTI_MATCH", recNo);
-            getSession().incrementCounter(flagPrefix+"_MULTI_MATCH", 1);
+            counters.increment(flagPrefix+"_MULTI_MATCH");
         }
         else if( activeRgdIds.size()==1) {
             dbFlagManager.setFlag(flagPrefix+"_SINGLE_MATCH", recNo);
-            getSession().incrementCounter(flagPrefix+"_SINGLE_MATCH", 1);
+            counters.increment(flagPrefix+"_SINGLE_MATCH");
         }
 
         // log if there is a match with some inactive rgd genes
         if( rgdIds.size() != activeRgdIds.size() ) {
             dbFlagManager.setFlag(flagPrefix+"_INACTIVE_MATCH", recNo);
-            getSession().incrementCounter(flagPrefix+"_INACTIVE_MATCH", 1);
+            counters.increment(flagPrefix+"_INACTIVE_MATCH");
         }
 
         return activeRgdIds;
@@ -809,13 +815,5 @@ public class EnsemblQualityChecker2 extends RecordProcessor {
 
     public void setDbFlagManager(PipelineLogFlagManager dbFlagManager) {
         this.dbFlagManager = dbFlagManager;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getVersion() {
-        return version;
     }
 }

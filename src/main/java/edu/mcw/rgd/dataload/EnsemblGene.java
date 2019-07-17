@@ -3,7 +3,6 @@ package edu.mcw.rgd.dataload;
 import edu.mcw.rgd.datamodel.Alias;
 import edu.mcw.rgd.datamodel.MapData;
 import edu.mcw.rgd.datamodel.XdbId;
-import edu.mcw.rgd.pipelines.PipelineRecord;
 import nu.xom.Attribute;
 import nu.xom.Element;
 
@@ -14,9 +13,10 @@ import java.util.*;
  * @since Aug 13, 2010
  * represents an ensemble gene as read from the input file
  */
-public class EnsemblGene extends PipelineRecord {
+public class EnsemblGene {
 
-    int recNo; // unique record number -- assigned automatically by file parser
+    Set<String> flags = new HashSet<>();
+    int recNo;
 
     // incoming data from Ensembl
     String ensemblGeneId;

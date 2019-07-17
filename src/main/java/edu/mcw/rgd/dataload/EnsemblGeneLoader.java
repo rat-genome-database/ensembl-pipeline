@@ -1,30 +1,36 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.*;
-import edu.mcw.rgd.pipelines.PipelineRecord;
-import edu.mcw.rgd.pipelines.RecordProcessor;
+import edu.mcw.rgd.process.CounterPool;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
  * @author mtutaj
- * Date: 9/16/11 <br>
- * Time: 11:25 AM <br>
+ * @since 9/16/11
  */
-public class EnsemblGeneLoader extends RecordProcessor {
+public class EnsemblGeneLoader {
 
     int speciesTypeKey;
     EnsemblDAO dao;
+    CounterPool counters;
 
     public EnsemblGeneLoader() throws Exception {
         dao = new EnsemblDAO();
     }
 
-    @Override
-    public void process(PipelineRecord pipelineRecord) throws Exception {
+    public void run(Collection<EnsemblGene> genes, CounterPool counters) throws Exception {
 
-        EnsemblGene rec = (EnsemblGene) pipelineRecord;
+        this.counters = counters;
+
+        for( EnsemblGene gene: genes ) {
+            run(gene);
+        }
+    }
+
+    void run(EnsemblGene rec) throws Exception {
 
         //System.out.println("DL> "+rec.getRecNo()+" QC flags count ="+rec.getQcFlags().size()+", "+rec.getEnsemblGeneId());
 

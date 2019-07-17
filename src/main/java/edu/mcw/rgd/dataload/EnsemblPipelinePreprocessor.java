@@ -1,7 +1,6 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.PipelineLog;
-import edu.mcw.rgd.pipelines.RecordPreprocessor;
 import edu.mcw.rgd.process.PipelineLogger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,19 +11,17 @@ import java.util.Map;
 
 /**
  * @author mtutaj
- * Date: 9/16/11 <br>
- * <p>
+ * @since 9/16/11
  * downloads ensembl files from ensembl biomart, parses them and breaks them into EnsemblGene objects
  */
-public class EnsemblPipelinePreprocessor extends RecordPreprocessor {
+public class EnsemblPipelinePreprocessor {
 
     EnsemblDataPuller dataPuller;
     EnsemblDataParser dataParser;
     int speciesTypeKey;
     PipelineLogger dbLogger = PipelineLogger.getInstance();
 
-    @Override
-    public void process() throws Exception {
+    public Collection<EnsemblGene> run() throws Exception {
 
         // download genes data from Ensembl biomart and store it locally in data folder
         dataPuller.setSpeciesTypeKey(speciesTypeKey);
@@ -47,9 +44,7 @@ public class EnsemblPipelinePreprocessor extends RecordPreprocessor {
         dbLogger.log(null, Integer.toString(genes.size()), PipelineLog.LOGPROP_RECCOUNT);
 
         // process all ensembl genes
-        for( EnsemblGene ensemblGene: genes.values() ) {
-            getSession().putRecordToFirstQueue(ensemblGene);
-        }
+        return genes.values();
     }
 
     int searchForMultiEnsemblGeneIdsMappedToOneRgdId(Collection<EnsemblGene> genes) throws Exception {

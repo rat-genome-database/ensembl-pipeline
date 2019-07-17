@@ -1,7 +1,7 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.SpeciesType;
-import edu.mcw.rgd.pipelines.PipelineManager;
+import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.PipelineLogger;
 import org.apache.commons.logging.Log;
@@ -10,12 +10,13 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.core.io.FileSystemResource;
 
+import java.util.Collection;
+import java.util.Enumeration;
+
 
 /**
- * Created by IntelliJ IDEA.
- * User: mtutaj
- * Date: Aug 13, 2010
- * Time: 10:07:53 AM
+ * @author mtutaj
+ * @since Aug 13, 2010
  */
 public class EnsemblLoader {
 
@@ -55,6 +56,8 @@ public class EnsemblLoader {
         if( speciesTypeKey<0 ) {
             throw new Exception("Aborted: please specify the species in cmd line");
         }
+
+
         if( speciesTypeKey==SpeciesType.ALL ) {
             loader.run(SpeciesType.RAT);
             loader.run(SpeciesType.MOUSE);
@@ -76,44 +79,42 @@ public class EnsemblLoader {
      */
     public void run(int speciesTypeKey) throws Exception {
 
+        CounterPool counters = new CounterPool();
+
         log.info(SpeciesType.getCommonName(speciesTypeKey)+" " +getVersion());
 
         dbLogger.init(speciesTypeKey, "download+process", "Ensembl");
 
-        // create a new pipeline framework
-        PipelineManager manager = new PipelineManager();
-
         // configure pipeline preprocessor, responsible for creating a stream of EnsemblGene records
         pipelinePreprocessor.setSpeciesTypeKey(speciesTypeKey);
-        manager.addPipelineWorkgroup(pipelinePreprocessor, "PP", 1, 0);
 
         // configure a pool of QC threads
         dataQC.setSpeciesTypeKey(speciesTypeKey);
         dataQC.setDbFlagManager(dbFlagManager);
         dataQC.init();
-        manager.addPipelineWorkgroup(dataQC, "QC", 6, 0);
 
         // configure one loader
         dataLoader.setSpeciesTypeKey(speciesTypeKey);
-        manager.addPipelineWorkgroup(dataLoader, "DL", 1, 0);
 
         try {
 
             // run the pipeline
-            manager.run();
-
-            //geneSummary.dumpSummary(log);
+            Collection<EnsemblGene> genes = pipelinePreprocessor.run();
+            dataQC.run(genes, counters);
+            dataLoader.run(genes, counters);
 
             // dump counter statistics
-            for( String counter: manager.getSession().getCounters() ) {
-                int count = manager.getSession().getCounterValue(counter);
+            Enumeration<String> counterNames = counters.getCounterNames();
+            while( counterNames.hasMoreElements() ) {
+                String counter = counterNames.nextElement();
+                int count = counters.get(counter);
                 if( count>0 ) {
                     //System.out.println(counter+": "+count);
                     dbLogger.log(counter, Integer.toString(count), PipelineLogger.TOTAL);
                 }
             }
 
-            manager.dumpCounters(log);
+            log.info(counters.dumpAlphabetically());
 
             dbLogger.getPipelineLog().setSuccess("OK");
             dbLogger.close(true);
