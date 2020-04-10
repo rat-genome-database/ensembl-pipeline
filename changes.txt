@@ -1,5 +1,8 @@
 UPDATES
 --------
+Apr 10, 2020
+  updated jar dependencies
+
 Jul 17, 2019
   simplified logic by getting rid of PipelineManager framework
 
