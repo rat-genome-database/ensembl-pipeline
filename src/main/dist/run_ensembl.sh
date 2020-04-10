@@ -6,7 +6,7 @@ HOST=`hostname -s | tr '[a-z]' '[A-Z]'`
 
 EMAIL_LIST=mtutaj@mcw.edu
 if [ "$HOST" == "REED" ]; then
-  EMAIL_LIST="mtutaj@mcw.edu,rgd.pipelines@mcw.edu"
+  EMAIL_LIST="mtutaj@mcw.edu"
 fi
 
 $APPDIR/run.sh -species Rat
