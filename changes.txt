@@ -1,5 +1,8 @@
 UPDATES
 --------
+Dec 17, 2020
+  upgraded log4j to avoid zero-day exploit
+
 Apr 10, 2020
   updated jar dependencies
 
