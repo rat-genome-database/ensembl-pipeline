@@ -1,6 +1,9 @@
 UPDATES
 --------
-Dec 17, 2020
+Dec 20, 2021
+  updated Oracle jdbc dependency
+
+Dec 17, 2021
   upgraded log4j to avoid zero-day exploit
 
 Apr 10, 2020

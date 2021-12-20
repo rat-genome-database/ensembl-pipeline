@@ -806,7 +806,7 @@ public class EnsemblQualityChecker2 {
         else if( speciesTypeKey==SpeciesType.HUMAN )
             log = LogFactory.getLog("newHumanGenes");
         else
-            log = LogFactory.getLog("core");
+            log = LogFactory.getLog("status");
     }
 
     public PipelineLogFlagManager getDbFlagManager() {
