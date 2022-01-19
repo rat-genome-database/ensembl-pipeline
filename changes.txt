@@ -1,5 +1,8 @@
 UPDATES
 --------
+Jan 18, 2022
+  updated dependencies to avoid log4j vulnerabilities
+
 Dec 20, 2021
   updated Oracle jdbc dependency
 
