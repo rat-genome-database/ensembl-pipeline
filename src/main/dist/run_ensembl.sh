@@ -13,4 +13,4 @@ $APPDIR/run.sh -species Rat
 $APPDIR/run.sh -species Mouse
 $APPDIR/run.sh -species Human
 
-mailx -s "[$HOST] Ensembl pipeline" $EMAIL_LIST < $APPDIR/logs/status.log
+mailx -s "[$HOST] Ensembl pipeline" $EMAIL_LIST < $APPDIR/logs/summary.log

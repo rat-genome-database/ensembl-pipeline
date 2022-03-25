@@ -1,5 +1,6 @@
-UPDATES
---------
+Mar 25, 2022
+  tweaked up logging
+
 Jan 18, 2022
   updated dependencies to avoid log4j vulnerabilities
 
