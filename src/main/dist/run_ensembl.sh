@@ -10,7 +10,10 @@ if [ "$HOST" == "REED" ]; then
 fi
 
 $APPDIR/run.sh -species Rat
+echo $APPDIR/logs/summary.log > $APPDIR/all.log
 $APPDIR/run.sh -species Mouse
+echo $APPDIR/logs/summary.log >> $APPDIR/all.log
 $APPDIR/run.sh -species Human
+echo $APPDIR/logs/summary.log >> $APPDIR/all.log
 
-mailx -s "[$HOST] Ensembl pipeline" $EMAIL_LIST < $APPDIR/logs/summary.log
+mailx -s "[$HOST] Ensembl pipeline" $EMAIL_LIST < $APPDIR/all.log
