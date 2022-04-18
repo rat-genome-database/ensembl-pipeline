@@ -2,7 +2,7 @@
 # shell script to run Ensembl pipeline
 . /etc/profile
 
-APPNAME=Ensembl
+APPNAME="ensembl-pipeline"
 APPDIR=/home/rgddata/pipelines/$APPNAME
 
 cd $APPDIR

@@ -1,3 +1,6 @@
+Apr 18, 2022
+  renamed distro to 'ensembl-pipeline'
+
 Apr 12, 2022
   improved logging
 

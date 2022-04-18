@@ -1,2 +1,2 @@
 # ensembl-pipeline
-Downloads genes from Ensembl and compares them against genes in RGD.
+Download genes from Ensembl for rat, mouse and human and compare them against genes in RGD.
