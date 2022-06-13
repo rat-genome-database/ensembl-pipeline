@@ -4,6 +4,7 @@ import edu.mcw.rgd.datamodel.SpeciesType;
 import edu.mcw.rgd.process.CounterPool;
 import edu.mcw.rgd.process.PipelineLogFlagManager;
 import edu.mcw.rgd.process.PipelineLogger;
+import edu.mcw.rgd.process.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -120,7 +121,7 @@ public class EnsemblLoader {
             dbLogger.close(true);
         }
         catch(Exception e) {
-            e.printStackTrace();
+            Utils.printStackTrace(e, log);
             dbLogger.getPipelineLog().setSuccess(e.getMessage());
             dbLogger.close(false);
 
