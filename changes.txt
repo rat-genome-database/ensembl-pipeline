@@ -1,3 +1,6 @@
+Aug 01, 2022
+  renamed 'master' branch to 'main'
+
 Jun 13, 2022
   improved logging
 
