@@ -1,5 +1,5 @@
 # run ensembl pipeline for rat, mouse and human
-APPDIR=/home/rgddata/pipelines/Ensembl
+APPDIR=/home/rgddata/pipelines/ensembl-pipeline
 
 # set variable HOST to uppercase hostname (f.e. TRAVIS, REED)
 HOST=`hostname -s | tr '[a-z]' '[A-Z]'`

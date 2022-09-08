@@ -1,5 +1,5 @@
 Sep 08, 2022
-  updated jar dependencies
+  fixed typo in run_ensembl.sh
 
 Aug 01, 2022
   renamed 'master' branch to 'main'
