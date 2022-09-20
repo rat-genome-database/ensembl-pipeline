@@ -1,3 +1,6 @@
+Sep 20, 2022
+  updated jar dependencies
+
 Sep 08, 2022
   fixed typo in run_ensembl.sh
 
