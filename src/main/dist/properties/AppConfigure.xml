@@ -1,7 +1,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
     <bean id="loader" class="edu.mcw.rgd.dataload.EnsemblLoader">
-        <property name="version" value="Ensembl Pipeline  -- build Feb 12, 2024"/>
+        <property name="version" value="Ensembl Pipeline  -- build Jan 06, 2025"/>
         <property name="pipelinePreprocessor" ref="pipelinePreprocessor"/>
         <property name="dataQC" ref="ensemblDataQC"/>
         <property name="dataLoader" ref="ensemblGeneLoader"/>
