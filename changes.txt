@@ -1,3 +1,6 @@
+Oct 20, 2025
+  refactored sql queries for better readability
+
 Jul 14, 2025
 Jul 01, 2025
 Mar 06, 2025

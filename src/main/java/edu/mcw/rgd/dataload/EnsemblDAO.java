@@ -6,7 +6,6 @@ import edu.mcw.rgd.dao.spring.IntListQuery;
 import edu.mcw.rgd.dao.spring.TranscriptQuery;
 import edu.mcw.rgd.datamodel.*;
 import org.springframework.jdbc.core.SqlParameter;
-import org.springframework.jdbc.object.MappingSqlQuery;
 
 import java.sql.Types;
 import java.util.*;
@@ -148,7 +147,10 @@ public class EnsemblDAO extends AbstractDAO {
      */
     public List<Integer> getXdbIds(int xdbKey, String accId, int speciesTypeKey) throws Exception {
 
-        String sql = "select distinct r.RGD_ID from RGD_ACC_XDB x,RGD_IDS r where XDB_KEY=? and ACC_ID=? and r.rgd_id=x.rgd_id and species_type_key=? and object_key=?";
+        String sql = """
+            SELECT DISTINCT r.rgd_id FROM rgd_acc_xdb x,rgd_ids r
+            WHERE xdb_key=? AND acc_id=? AND r.rgd_id=x.rgd_id AND species_type_key=? AND object_key=?
+            """;
         return IntListQuery.execute(this, sql, xdbKey, accId, speciesTypeKey, RgdId.OBJECT_KEY_GENES);
     }
 
@@ -171,20 +173,22 @@ public class EnsemblDAO extends AbstractDAO {
     public List<Integer> getGenesByCoords(String chr, int startPos, int stopPos, int speciesTypeKey) throws Exception {
 
         // select genes that match exactly the genomic position
-        String sql = "select g.RGD_ID from GENES g,RGD_IDS r,MAPS_DATA m "+
-                "where g.RGD_ID=r.RGD_ID and r.SPECIES_TYPE_KEY=? and m.RGD_ID=r.RGD_ID and m.MAP_KEY=? "+
-                " and m.CHROMOSOME=? and m.START_POS=? and m.STOP_POS=?";
-
+        String sql = """
+            SELECT g.rgd_id FROM genes g,rgd_ids r,maps_data m
+            WHERE g.rgd_id=r.rgd_id AND r.species_type_key=? AND m.rgd_id=r.rgd_id AND m.map_key=?
+             AND m.chromosome=? AND m.start_pos=? AND m.stop_pos=?
+            """;
         return IntListQuery.execute(this, sql, speciesTypeKey, getPrimaryMapKey(speciesTypeKey), chr, startPos, stopPos);
     }
 
     public List<Integer> getGenesByCoordsPartial(String chr, int startPos, int stopPos, int speciesTypeKey) throws Exception {
 
         // select genes that match exactly the genomic position
-        String sql = "select g.RGD_ID from GENES g,RGD_IDS r,MAPS_DATA m "+
-                "where g.RGD_ID=r.RGD_ID and r.SPECIES_TYPE_KEY=? and m.RGD_ID=r.RGD_ID and m.MAP_KEY=? "+
-                " AND m.chromosome=? AND m.start_pos<=? AND m.stop_pos>=?";
-
+        String sql = """
+            SELECT g.rgd_id FROM genes g,rgd_ids r,maps_data m
+            WHERE g.rgd_id=r.rgd_id AND r.species_type_key=? AND m.rgd_id=r.rgd_id AND m.map_key=?
+              AND m.chromosome=? AND m.start_pos<=? AND m.stop_pos>=?
+            """;
         return IntListQuery.execute(this, sql, speciesTypeKey, getPrimaryMapKey(speciesTypeKey), chr, stopPos, startPos);
     }
 
@@ -216,14 +220,16 @@ public class EnsemblDAO extends AbstractDAO {
         if( species!=SpeciesType.RAT )
             return null;
 
-        String sql = "SELECT transcript_rgd_id,gene_rgd_id,acc_id,created_date,is_non_coding_ind FROM maps_data,transcripts "
-            + "WHERE map_key=? AND chromosome=? AND start_pos=? AND stop_pos=? AND rgd_id=transcript_rgd_id";
-        MappingSqlQuery query = new TranscriptQuery(this.getDataSource(), sql);
+        String sql = """
+            SELECT transcript_rgd_id,gene_rgd_id,acc_id,created_date,is_non_coding_ind FROM maps_data,transcripts
+            WHERE map_key=? AND chromosome=? AND start_pos=? AND stop_pos=? AND rgd_id=transcript_rgd_id
+            """;
+        TranscriptQuery query = new TranscriptQuery(this.getDataSource(), sql);
         query.declareParameter(new SqlParameter(Types.INTEGER));
         query.declareParameter(new SqlParameter(Types.VARCHAR));
         query.declareParameter(new SqlParameter(Types.INTEGER));
         query.declareParameter(new SqlParameter(Types.INTEGER));
-        return query.execute(new Object[]{getPrimaryMapKey(species), chromosome, startPos, stopPos});
+        return query.execute( getPrimaryMapKey(species), chromosome, startPos, stopPos );
     }
 
 }
