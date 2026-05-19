@@ -1,7 +1,7 @@
 package edu.mcw.rgd.dataload;
 
 import edu.mcw.rgd.datamodel.SpeciesType;
-import edu.mcw.rgd.process.FileDownloader;
+import edu.mcw.rgd.process.FileDownloader2;
 import edu.mcw.rgd.process.FileExternalSort;
 import edu.mcw.rgd.process.PipelineLogger;
 
@@ -76,7 +76,7 @@ public class EnsemblDataPuller {
 
         String data = buildBiomartQuery(attributes);
 
-        FileDownloader downloader = new FileDownloader();
+        FileDownloader2 downloader = new FileDownloader2();
         downloader.setExternalFile(websiteUrl + "?" + data);
         downloader.setLocalFile("data/" + SpeciesType.getCommonName(speciesTypeKey).toLowerCase() + "_" + outFile);
         downloader.setPrependDateStamp(true); // every downloaded file will have the current date in the name

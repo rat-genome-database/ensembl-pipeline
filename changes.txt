@@ -1,3 +1,6 @@
+May 19, 2026
+  migrated from FileDownloader to FileDownloader2 (dropped commons-net and httpclient); updated dependencies
+
 Oct 20, 2025
   refactored sql queries for better readability
 

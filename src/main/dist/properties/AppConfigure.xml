@@ -1,14 +1,14 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
     <bean id="loader" class="edu.mcw.rgd.dataload.EnsemblLoader">
-        <property name="version" value="Ensembl Pipeline  -- build Oct 20, 2025"/>
+        <property name="version" value="ensembl-pipeline  -- build May 19, 2026"/>
         <property name="pipelinePreprocessor" ref="pipelinePreprocessor"/>
         <property name="dataQC" ref="ensemblDataQC"/>
         <property name="dataLoader" ref="ensemblGeneLoader"/>
     </bean>
 
     <bean id="ensemblDataPuller" class="edu.mcw.rgd.dataload.EnsemblDataPuller">
-        <property name="version" value="EnsemblDataPuller  build 2019-07-17" />
+        <property name="version" value="EnsemblDataPuller  build 2026-05-19" />
         <property name="websiteUrl" value="http://www.ensembl.org/biomart/martservice"/>
         <property name="biomartQueryTemplate" value="properties/biomart.xml"/>
         <property name="biomartQueryAttrsGenes"><!-- ensembl gene attributes common to all species -->
