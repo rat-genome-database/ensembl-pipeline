@@ -27,7 +27,6 @@ public class EnsemblLoader {
 
     EnsemblPipelinePreprocessor pipelinePreprocessor;
     EnsemblQualityChecker2 dataQC;
-    EnsemblGeneLoader dataLoader;
     private String version;
     private Log log = LogFactory.getLog("status");
 
@@ -94,15 +93,11 @@ public class EnsemblLoader {
         dataQC.setDbFlagManager(dbFlagManager);
         dataQC.init();
 
-        // configure one loader
-        dataLoader.setSpeciesTypeKey(speciesTypeKey);
-
         try {
 
             // run the pipeline
             Collection<EnsemblGene> genes = pipelinePreprocessor.run();
             dataQC.run(genes, counters);
-            dataLoader.run(genes, counters);
 
             // dump counter statistics
             Enumeration<String> counterNames = counters.getCounterNames();
@@ -154,14 +149,6 @@ public class EnsemblLoader {
 
     public void setPipelinePreprocessor(EnsemblPipelinePreprocessor pipelinePreprocessor) {
         this.pipelinePreprocessor = pipelinePreprocessor;
-    }
-
-    public EnsemblGeneLoader getDataLoader() {
-        return dataLoader;
-    }
-
-    public void setDataLoader(EnsemblGeneLoader geneLoader) {
-        this.dataLoader = geneLoader;
     }
 
     public void setVersion(String version) {

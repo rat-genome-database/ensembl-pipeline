@@ -1,10 +1,9 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
     <bean id="loader" class="edu.mcw.rgd.dataload.EnsemblLoader">
-        <property name="version" value="ensembl-pipeline  -- build May 19, 2026"/>
+        <property name="version" value="ensembl-pipeline -- build Jul 8, 2026"/>
         <property name="pipelinePreprocessor" ref="pipelinePreprocessor"/>
         <property name="dataQC" ref="ensemblDataQC"/>
-        <property name="dataLoader" ref="ensemblGeneLoader"/>
     </bean>
 
     <bean id="ensemblDataPuller" class="edu.mcw.rgd.dataload.EnsemblDataPuller">
@@ -72,9 +71,6 @@
     <bean id="pipelinePreprocessor" class="edu.mcw.rgd.dataload.EnsemblPipelinePreprocessor">
         <property name="dataPuller" ref="ensemblDataPuller"/>
         <property name="dataParser" ref="ensemblDataParser"/>
-    </bean>
-
-    <bean id="ensemblGeneLoader" class="edu.mcw.rgd.dataload.EnsemblGeneLoader">
     </bean>
 
 </beans>

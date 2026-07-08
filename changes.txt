@@ -1,3 +1,6 @@
+Jul 8, 2026
+  removed disabled gene loader code (pipeline is report-only); updated dependencies
+
 May 19, 2026
   migrated from FileDownloader to FileDownloader2 (dropped commons-net and httpclient); updated dependencies
 
