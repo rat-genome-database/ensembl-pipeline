@@ -1,3 +1,6 @@
+Oct 21, 2026
+  migrated to postgres; updated dependencies
+
 Jul 8, 2026
   removed disabled gene loader code (pipeline is report-only); updated dependencies
 
